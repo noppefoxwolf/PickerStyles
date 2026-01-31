@@ -45,7 +45,6 @@ public struct AdjustmentSlider<Value: BinaryFloatingPoint>: View {
         .scrollTargetBehavior(.viewAligned)
         .scrollIndicators(.hidden)
         .defaultScrollAnchor(.center, for: .alignment)
-        .mask(scrollMask)
         .scrollPosition(id: $scrollID, anchor: .center)
         .onAppear {
             syncScrollToValue(animated: false)
@@ -56,6 +55,7 @@ public struct AdjustmentSlider<Value: BinaryFloatingPoint>: View {
         .onChange(of: scrollID) { _, newValue in
             updateValue(for: newValue)
         }
+        .mask(scrollMask)
     }
 
     private func tickStack(sidePadding: CGFloat) -> some View {
