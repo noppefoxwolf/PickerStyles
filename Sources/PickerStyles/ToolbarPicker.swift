@@ -16,40 +16,50 @@ public struct ToolbarPicker<SelectionValue: Hashable, Content: View>: View {
     }
     
     public var body: some View {
-        HStack(spacing: 12) {
-            ForEach(subviews: content) { subview in
-                if let tag = subview.containerValues.tag(for: SelectionValue.self) {
-                    Button {
-                        selection = tag
-                    } label: {
+        toolbarContent
+    }
+
+    private var toolbarContent: some View {
+        Group(subviews: content) { subviews in
+            HStack(spacing: 12) {
+                ForEach(subviews) { subview in
+                    if let tag = subview.containerValues.tag(for: SelectionValue.self) {
+                        selectionButton(tag: tag, isSelected: selection == tag) {
+                            subview
+                        }
+                    } else {
                         subview
-                            .symbolVariant(selection == tag ? .fill : .none)
-                            .labelStyle(ToolItemContentLabelStyle())
-                            .foregroundStyle(selection == tag ? .primary : .secondary)
-                            .frame(minWidth: 44)
-                            .selectedIndicator(isEnabled: selection == tag)
                     }
-                    .foregroundStyle(Color.primary)
-                } else {
-                    subview
                 }
             }
         }
         .frame(minHeight: 64, alignment: .center)
         .padding(.horizontal, 24)
-        .modifier {
-            if #available(iOS 26.0, *) {
-                $0.glassEffect(.regular.interactive())
-            } else {
-                $0.background(Material.regular).mask(Capsule())
-            }
-        }
+        .toolbarBackgroundStyle()
         .shadow(color: .black.opacity(0.2), radius: 12)
         .padding(.horizontal, 24)
     }
+
+    private func selectionButton<Label: View>(
+        tag: SelectionValue,
+        isSelected: Bool,
+        @ViewBuilder label: () -> Label
+    ) -> some View {
+        Button {
+            selection = tag
+        } label: {
+            label()
+                .symbolVariant(isSelected ? .fill : .none)
+                .labelStyle(ToolItemContentLabelStyle())
+                .foregroundStyle(isSelected ? .primary : .secondary)
+                .frame(minWidth: 44)
+                .selectedIndicator(isEnabled: isSelected)
+        }
+        .foregroundStyle(Color.primary)
+    }
 }
 
-struct ToolItemContentLabelStyle: LabelStyle {
+private struct ToolItemContentLabelStyle: LabelStyle {
     func makeBody(configuration: Configuration) -> some View {
         VStack(spacing: 4) {
             configuration.icon
@@ -61,14 +71,14 @@ struct ToolItemContentLabelStyle: LabelStyle {
     }
 }
 
-extension View {
+private extension View {
     @ViewBuilder
     func selectedIndicator(isEnabled: Bool) -> some View {
         modifier(SelectedIndicatorViewModifier(isEnabled: isEnabled))
     }
 }
 
-struct SelectedIndicatorViewModifier: ViewModifier {
+private struct SelectedIndicatorViewModifier: ViewModifier {
     let isEnabled: Bool
     
     func body(content: Content) -> some View {
@@ -83,5 +93,16 @@ struct SelectedIndicatorViewModifier: ViewModifier {
                     .alignmentGuide(.top) { $0[.bottom] }
                     .opacity(isEnabled ? 1 : 0)
             }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func toolbarBackgroundStyle() -> some View {
+        if #available(iOS 26.0, *) {
+            glassEffect(.regular.interactive())
+        } else {
+            background(Material.regular).mask(Capsule())
+        }
     }
 }
