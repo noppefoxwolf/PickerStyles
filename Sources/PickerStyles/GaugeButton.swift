@@ -3,11 +3,13 @@ import SwiftUI
 public struct GaugeButton<Value: BinaryFloatingPoint>: View {
     public let value: Value
     public let range: ClosedRange<Value>
+    public let threshold: Value?
     public let isSelected: Bool
     
-    public init(value: Value, range: ClosedRange<Value>, isSelected: Bool) {
+    public init(value: Value, range: ClosedRange<Value>, threshold: Value? = nil, isSelected: Bool) {
         self.value = value
         self.range = range
+        self.threshold = threshold
         self.isSelected = isSelected
     }
     
@@ -23,6 +25,22 @@ public struct GaugeButton<Value: BinaryFloatingPoint>: View {
 }
 
 private extension GaugeButton {
+    var isBelowThreshold: Bool {
+        guard let threshold else {
+            return false
+        }
+        return value < threshold
+    }
+
+    var ringBaseColor: Color {
+        let base = isBelowThreshold ? Color.secondary : Color.accentColor
+        return base.opacity(0.2)
+    }
+
+    var ringProgressColor: Color {
+        isBelowThreshold ? .secondary : .accentColor
+    }
+
     var progress: Double {
         let span = range.upperBound - range.lowerBound
         guard span > .zero else {
@@ -54,12 +72,12 @@ private extension GaugeButton {
     @ViewBuilder
     var gaugeRing: some View {
         Circle()
-            .strokeBorder(.tertiary, lineWidth: 2)
+            .stroke(ringBaseColor, lineWidth: 2)
             .overlay {
                 Circle()
                     .trim(from: 0, to: progress)
                     .stroke(
-                        .tint,
+                        ringProgressColor,
                         style: StrokeStyle(lineWidth: 2, lineCap: .round)
                     )
                     .rotationEffect(.degrees(-90))

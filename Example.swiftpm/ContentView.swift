@@ -207,8 +207,7 @@ private extension ContentView {
                 .padding(.horizontal, 24)
 
             HStack(spacing: 16) {
-                GaugeButton(value: gaugeValue, range: 0...1, isSelected: gaugeValue >= 0.5)
-                    .tint(.accentColor)
+                GaugeButton(value: gaugeValue, range: 0...1, threshold: 0.5, isSelected: gaugeValue >= 0.5)
 
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
