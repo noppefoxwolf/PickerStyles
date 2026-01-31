@@ -12,6 +12,12 @@ public struct AdjustmentSlider<Value: BinaryFloatingPoint>: View {
     @State
     private var scrollID: Int?
 
+    @State
+    private var isUpdatingValueFromScroll: Bool = false
+
+    @State
+    private var lastSnappedID: Int?
+
     public init(
         value: Binding<Value>,
         in inRange: ClosedRange<Value>,
@@ -39,23 +45,32 @@ public struct AdjustmentSlider<Value: BinaryFloatingPoint>: View {
     private func scrollSlider(in size: CGSize) -> some View {
         let sidePadding = max(0, (size.width - lineWidth) / 2)
 
-        return ScrollView(.horizontal) {
-            tickStack(sidePadding: sidePadding)
+        return ScrollViewReader { proxy in
+            ScrollView(.horizontal) {
+                tickStack(sidePadding: sidePadding)
+            }
+            .scrollIndicators(.hidden)
+            .scrollPosition(id: $scrollID, anchor: .center)
+            .onScrollPhaseChange { _, newPhase in
+                if newPhase == .idle {
+                    snapToCurrentID(using: proxy)
+                }
+            }
+            .onAppear {
+                syncScrollToValue(animated: false)
+            }
+            .onChange(of: value) { _, _ in
+                if isUpdatingValueFromScroll {
+                    isUpdatingValueFromScroll = false
+                    return
+                }
+                syncScrollToValue(animated: true)
+            }
+            .onChange(of: scrollID) { _, newValue in
+                updateValue(for: newValue)
+            }
+            .mask(scrollMask)
         }
-        .scrollTargetBehavior(.viewAligned)
-        .scrollIndicators(.hidden)
-        .defaultScrollAnchor(.center, for: .alignment)
-        .scrollPosition(id: $scrollID, anchor: .center)
-        .onAppear {
-            syncScrollToValue(animated: false)
-        }
-        .onChange(of: value) { _, _ in
-            syncScrollToValue(animated: true)
-        }
-        .onChange(of: scrollID) { _, newValue in
-            updateValue(for: newValue)
-        }
-        .mask(scrollMask)
     }
 
     private func tickStack(sidePadding: CGFloat) -> some View {
@@ -194,6 +209,7 @@ public struct AdjustmentSlider<Value: BinaryFloatingPoint>: View {
         guard scrollID != targetID else {
             return
         }
+        lastSnappedID = targetID
         if animated {
             withAnimation(.easeOut(duration: 0.2)) {
                 scrollID = targetID
@@ -209,7 +225,22 @@ public struct AdjustmentSlider<Value: BinaryFloatingPoint>: View {
         }
         let newValue = steppedValue(tick.value)
         if !isApproximatelyEqual(newValue, value) {
+            isUpdatingValueFromScroll = true
             value = newValue
+        }
+    }
+
+    private func snapToCurrentID(using proxy: ScrollViewProxy) {
+        guard let scrollID else {
+            lastSnappedID = nil
+            return
+        }
+        guard scrollID != lastSnappedID else {
+            return
+        }
+        lastSnappedID = scrollID
+        withAnimation(.easeOut(duration: 0.2)) {
+            proxy.scrollTo(scrollID, anchor: .center)
         }
     }
 
