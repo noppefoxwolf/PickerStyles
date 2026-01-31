@@ -1,13 +1,16 @@
 import SwiftUI
 
-struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: View {
+public struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: View {
     
     let content: Content
     
     @Binding
     var selection: SelectionValue
     
-    init(
+    @State
+    private var centeredTag: SelectionValue?
+    
+    public init(
         selection: Binding<SelectionValue>,
         @ViewBuilder content: () -> Content
     ) {
@@ -15,7 +18,7 @@ struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: View {
         self.content = content()
     }
     
-    var body: some View {
+    public var body: some View {
         ScrollView(.horizontal) {
             LazyHStack {
                 ForEach(subviews: content) { subview in
@@ -32,15 +35,20 @@ struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: View {
                                 .mask(Capsule())
                         }
                         .foregroundStyle(Color.primary)
+                        .id(tag)
                     } else {
                         subview
                     }
                 }
             }
+            .scrollTargetLayout()
         }
         .frame(minHeight: 64)
         .frame(maxWidth: .infinity)
         .fixedSize(horizontal: false, vertical: true)
+        .scrollTargetBehavior(.viewAligned)
+        .scrollPosition(id: $centeredTag, anchor: .center)
+        .scrollIndicators(.hidden)
         .mask {
             LinearGradient(
                 stops: [
@@ -52,6 +60,20 @@ struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: View {
                 startPoint: .leading,
                 endPoint: .trailing
             )
+        }
+        .onAppear {
+            centeredTag = selection
+        }
+        .onChange(of: selection) { _, newValue in
+            if centeredTag != newValue {
+                centeredTag = newValue
+            }
+        }
+        .onChange(of: centeredTag) { _, newValue in
+            guard let newValue else { return }
+            if selection != newValue {
+                selection = newValue
+            }
         }
     }
 }

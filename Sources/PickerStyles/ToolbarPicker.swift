@@ -1,13 +1,13 @@
 import SwiftUI
 
-struct ToolbarPicker<SelectionValue: Hashable, Content: View>: View {
+public struct ToolbarPicker<SelectionValue: Hashable, Content: View>: View {
     
     let content: Content
     
     @Binding
     var selection: SelectionValue
     
-    init(
+    public init(
         selection: Binding<SelectionValue>,
         @ViewBuilder content: () -> Content
     ) {
@@ -15,7 +15,7 @@ struct ToolbarPicker<SelectionValue: Hashable, Content: View>: View {
         self.content = content()
     }
     
-    var body: some View {
+    public var body: some View {
         HStack(spacing: 12) {
             ForEach(subviews: content) { subview in
                 if let tag = subview.containerValues.tag(for: SelectionValue.self) {
