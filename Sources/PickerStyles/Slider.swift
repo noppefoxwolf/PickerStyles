@@ -45,6 +45,7 @@ public struct AdjustmentSlider<Value: BinaryFloatingPoint>: View {
         .scrollTargetBehavior(.viewAligned)
         .scrollIndicators(.hidden)
         .defaultScrollAnchor(.center, for: .alignment)
+        .mask(scrollMask)
         .scrollPosition(id: $scrollID, anchor: .center)
         .onAppear {
             syncScrollToValue(animated: false)
@@ -145,6 +146,19 @@ public struct AdjustmentSlider<Value: BinaryFloatingPoint>: View {
     private var lineWidth: CGFloat { 2 }
     private var anchorDotSize: CGFloat { 6 }
     private var anchorDotGap: CGFloat { 2 }
+
+    private var scrollMask: some View {
+        LinearGradient(
+            stops: [
+                Gradient.Stop(color: .clear, location: 0),
+                Gradient.Stop(color: .black, location: 0.2),
+                Gradient.Stop(color: .black, location: 0.8),
+                Gradient.Stop(color: .clear, location: 1),
+            ],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+    }
 
     private var ticks: [Tick] {
         let lower = inRange.lowerBound
