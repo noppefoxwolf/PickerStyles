@@ -46,9 +46,6 @@ public struct AdjustmentSlider<Value: BinaryFloatingPoint>: View {
         .scrollIndicators(.hidden)
         .defaultScrollAnchor(.center, for: .alignment)
         .scrollPosition(id: $scrollID, anchor: .center)
-        .overlay {
-            centerIndicator
-        }
         .onAppear {
             syncScrollToValue(animated: false)
         }
@@ -61,7 +58,7 @@ public struct AdjustmentSlider<Value: BinaryFloatingPoint>: View {
     }
 
     private func tickStack(sidePadding: CGFloat) -> some View {
-        LazyHStack(spacing: tickSpacing) {
+        LazyHStack(alignment: .bottom, spacing: tickSpacing) {
             ForEach(ticks) { tick in
                 tickMark(
                     isSelected: tick.id == scrollID,
@@ -75,31 +72,42 @@ public struct AdjustmentSlider<Value: BinaryFloatingPoint>: View {
         .padding(.horizontal, sidePadding)
     }
 
+    @ViewBuilder
     private func tickMark(
         isSelected: Bool,
         isAnchor: Bool,
         isMajor: Bool
     ) -> some View {
-        RoundedRectangle(cornerRadius: lineWidth / 2)
-            .fill(tickColor(isSelected: isSelected, isAnchor: isAnchor, isMajor: isMajor))
-            .frame(width: lineWidth, height: tickHeight(isAnchor: isAnchor))
+        Rectangle()
+            .fill(tickColor(isSelected: isSelected, isMajor: isMajor))
+            .frame(width: lineWidth, height: tickHeight)
+            .mask(Capsule())
+            .overlay(alignment: .top) {
+                if isAnchor {
+                    anchorDot(isSelected: isSelected)
+                }
+            }
     }
 
-    private func tickColor(isSelected: Bool, isAnchor: Bool, isMajor: Bool) -> Color {
+    private func tickColor(isSelected: Bool, isMajor: Bool) -> Color {
         if isSelected {
             return Color.accentColor
-        }
-        if isAnchor {
-            return Color.primary.opacity(0.6)
         }
         return Color.secondary.opacity(isMajor ? 0.55 : 0.3)
     }
 
-    private func tickHeight(isAnchor: Bool) -> CGFloat {
-        if isAnchor {
-            return anchorMarkerHeight
+    private func anchorDot(isSelected: Bool) -> some View {
+        Circle()
+            .fill(anchorDotColor(isSelected: isSelected))
+            .frame(width: anchorDotSize, height: anchorDotSize)
+            .offset(y: -(anchorDotSize + anchorDotGap))
+    }
+
+    private func anchorDotColor(isSelected: Bool) -> Color {
+        if isSelected {
+            return Color.accentColor
         }
-        return tickHeight
+        return Color.primary.opacity(0.6)
     }
 
     private func isMajorTick(_ index: Int) -> Bool {
@@ -107,13 +115,6 @@ public struct AdjustmentSlider<Value: BinaryFloatingPoint>: View {
             return true
         }
         return index % majorTickStride == 0
-    }
-
-    private var centerIndicator: some View {
-        RoundedRectangle(cornerRadius: lineWidth / 2)
-            .fill(Color.primary)
-            .frame(width: lineWidth, height: centerIndicatorHeight)
-            .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
     }
 
     private var doubleValue: Binding<Double> {
@@ -138,13 +139,12 @@ public struct AdjustmentSlider<Value: BinaryFloatingPoint>: View {
     }
 
     private var sliderHeight: CGFloat { 44 }
-    private var tickHeight: CGFloat { 12 }
-    private var anchorMarkerHeight: CGFloat { 20 }
+    private var tickHeight: CGFloat { 16 }
     private var majorTickStride: Int { 5 }
     private var tickSpacing: CGFloat { 6 }
-    private var centerIndicatorHeight: CGFloat { 24 }
-
     private var lineWidth: CGFloat { 2 }
+    private var anchorDotSize: CGFloat { 6 }
+    private var anchorDotGap: CGFloat { 2 }
 
     private var ticks: [Tick] {
         let lower = inRange.lowerBound
