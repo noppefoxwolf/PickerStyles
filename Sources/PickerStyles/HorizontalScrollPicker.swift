@@ -69,11 +69,5 @@ public struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: V
                 centeredTag = newValue
             }
         }
-        .onChange(of: centeredTag) { _, newValue in
-            guard let newValue else { return }
-            if selection != newValue {
-                selection = newValue
-            }
-        }
     }
 }
