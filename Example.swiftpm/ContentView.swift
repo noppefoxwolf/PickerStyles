@@ -64,6 +64,9 @@ struct ContentView: View {
 
     @State
     private var temperature: Double = 5200
+
+    @State
+    private var gaugeValue: Double = 0.35
     
     private let items: [Item] = [
         Item(title: "Morning Light", subtitle: "Lagoon", symbolName: "sunrise.fill", category: .favorites),
@@ -180,6 +183,8 @@ struct ContentView: View {
                 .padding(.horizontal, 24)
             }
 
+            gaugeSection
+
             Spacer(minLength: 0)
             
             ToolbarPicker(selection: $selectedMode) {
@@ -189,6 +194,40 @@ struct ContentView: View {
                 }
             }
             .padding(.bottom, 12)
+        }
+    }
+}
+
+private extension ContentView {
+    @ViewBuilder
+    var gaugeSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("GaugeButton")
+                .font(.headline)
+                .padding(.horizontal, 24)
+
+            HStack(spacing: 16) {
+                GaugeButton(value: gaugeValue, range: 0...1, isSelected: gaugeValue >= 0.5)
+                    .tint(.accentColor)
+
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Label("Intensity", systemImage: "dial.high")
+                            .font(.subheadline)
+                        Spacer()
+                        Text(gaugeValue, format: .number.precision(.fractionLength(2)))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    AdjustmentSlider(
+                        value: $gaugeValue,
+                        in: 0...1,
+                        step: 0.01
+                    )
+                }
+            }
+            .padding(.horizontal, 24)
         }
     }
 }
