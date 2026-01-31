@@ -58,6 +58,12 @@ struct ContentView: View {
     
     @State
     private var selectedMode: Mode = .grid
+
+    @State
+    private var exposure: Double = 0.2
+
+    @State
+    private var temperature: Double = 5200
     
     private let items: [Item] = [
         Item(title: "Morning Light", subtitle: "Lagoon", symbolName: "sunrise.fill", category: .favorites),
@@ -135,6 +141,45 @@ struct ContentView: View {
                 }
             }
             
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Adjustment")
+                    .font(.headline)
+                    .padding(.horizontal, 24)
+
+                VStack(spacing: 12) {
+                    HStack {
+                        Label("Exposure", systemImage: "sun.max.fill")
+                            .font(.subheadline)
+                        Spacer()
+                        Text(exposure, format: .number.precision(.fractionLength(2)))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    AdjustmentSlider(
+                        value: $exposure,
+                        in: -1.0...1.0,
+                        step: 0.05
+                    )
+
+                    HStack {
+                        Label("Temperature", systemImage: "thermometer.sun.fill")
+                            .font(.subheadline)
+                        Spacer()
+                        Text(temperature, format: .number.precision(.fractionLength(0)))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    AdjustmentSlider(
+                        value: $temperature,
+                        in: 3200...7200,
+                        step: 50
+                    )
+                }
+                .padding(.horizontal, 24)
+            }
+
             Spacer(minLength: 0)
             
             ToolbarPicker(selection: $selectedMode) {
