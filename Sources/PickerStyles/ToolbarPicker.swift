@@ -40,6 +40,7 @@ public struct ToolbarPicker<SelectionValue: Hashable, Content: View>: View {
         .padding(.horizontal, 24)
     }
 
+    @ViewBuilder
     private func selectionButton<Label: View>(
         tag: SelectionValue,
         isSelected: Bool,
@@ -60,6 +61,7 @@ public struct ToolbarPicker<SelectionValue: Hashable, Content: View>: View {
 }
 
 private struct ToolItemContentLabelStyle: LabelStyle {
+    @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
         VStack(spacing: 4) {
             configuration.icon
@@ -81,6 +83,7 @@ private extension View {
 private struct SelectedIndicatorViewModifier: ViewModifier {
     let isEnabled: Bool
     
+    @ViewBuilder
     func body(content: Content) -> some View {
         content
             .overlay(alignment: .top) {

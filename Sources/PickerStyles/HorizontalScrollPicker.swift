@@ -27,6 +27,7 @@ public struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: V
         }
     }
 
+    @ViewBuilder
     private func scrollView(proxy: ScrollViewProxy) -> some View {
         ScrollView(.horizontal) {
             pickerContent
@@ -77,6 +78,7 @@ public struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: V
         }
     }
 
+    @ViewBuilder
     private func edgeSpacer(itemWidth: CGFloat) -> some View {
         Spacer()
             .containerRelativeFrame(.horizontal) { length, _ in
@@ -84,6 +86,7 @@ public struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: V
             }
     }
 
+    @ViewBuilder
     private func selectionButton<Label: View>(
         tag: SelectionValue,
         isSelected: Bool,
