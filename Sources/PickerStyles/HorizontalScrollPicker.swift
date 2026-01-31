@@ -19,6 +19,10 @@ public struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: V
         ScrollViewReader { proxy in
             ScrollView(.horizontal) {
                 LazyHStack {
+                    Spacer()
+                        .containerRelativeFrame(.horizontal) { (length, _) in
+                            length / 2.0
+                        }
                     ForEach(subviews: content) { subview in
                         if let tag = subview.containerValues.tag(for: SelectionValue.self) {
                             Button {
@@ -38,6 +42,10 @@ public struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: V
                             subview
                         }
                     }
+                    Spacer()
+                        .containerRelativeFrame(.horizontal) { (length, _) in
+                            length / 2.0
+                        }
                 }
                 .scrollTargetLayout()
             }
@@ -46,6 +54,7 @@ public struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: V
             .fixedSize(horizontal: false, vertical: true)
             .scrollTargetBehavior(.viewAligned)
             .scrollIndicators(.hidden)
+            .defaultScrollAnchor(.center, for: .alignment)
             .mask {
                 LinearGradient(
                     stops: [
