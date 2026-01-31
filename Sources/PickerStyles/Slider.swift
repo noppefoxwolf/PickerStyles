@@ -42,10 +42,11 @@ public struct AdjustmentSlider<Value: BinaryFloatingPoint>: View {
         }
     }
 
+    @ViewBuilder
     private func scrollSlider(in size: CGSize) -> some View {
         let sidePadding = max(0, (size.width - lineWidth) / 2)
 
-        return ScrollViewReader { proxy in
+        ScrollViewReader { proxy in
             ScrollView(.horizontal) {
                 tickStack(sidePadding: sidePadding)
             }
@@ -73,6 +74,7 @@ public struct AdjustmentSlider<Value: BinaryFloatingPoint>: View {
         }
     }
 
+    @ViewBuilder
     private func tickStack(sidePadding: CGFloat) -> some View {
         LazyHStack(alignment: .bottom, spacing: tickSpacing) {
             ForEach(ticks) { tick in
@@ -112,6 +114,7 @@ public struct AdjustmentSlider<Value: BinaryFloatingPoint>: View {
         return Color.secondary.opacity(isMajor ? 0.55 : 0.3)
     }
 
+    @ViewBuilder
     private func anchorDot(isSelected: Bool) -> some View {
         Circle()
             .fill(anchorDotColor(isSelected: isSelected))
