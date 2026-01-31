@@ -23,82 +23,115 @@ public struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: V
     
     public var body: some View {
         ScrollViewReader { proxy in
-            ScrollView(.horizontal) {
-                Group(subviews: content) { subviews in
-                    let leadingID = subviews.first?.id
-                    let trailingID = subviews.last?.id
-                    
-                    LazyHStack {
-                        Spacer()
-                            .containerRelativeFrame(.horizontal) { (length, _) in
-                                max(0, (length - leadingItemWidth) / 2.0)
-                            }
-                        ForEach(subviews) { subview in
-                            let isLeading = subview.id == leadingID
-                            let isTrailing = subview.id == trailingID
-                            
-                            if let tag = subview.containerValues.tag(for: SelectionValue.self) {
-                                Button {
-                                    selection = tag
-                                } label: {
-                                    subview
-                                        .labelStyle(.titleOnly)
-                                        .foregroundStyle(selection == tag ? .black : .secondary)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 4)
-                                        .background(selection == tag ? .yellow : .clear)
-                                        .mask(Capsule())
-                                }
-                                .foregroundStyle(Color.primary)
-                                .id(tag)
-                                .readEdgeItemWidth(isLeading: isLeading, isTrailing: isTrailing)
-                            } else {
-                                subview
-                                    .readEdgeItemWidth(isLeading: isLeading, isTrailing: isTrailing)
-                            }
+            scrollView(proxy: proxy)
+        }
+    }
+
+    private func scrollView(proxy: ScrollViewProxy) -> some View {
+        ScrollView(.horizontal) {
+            pickerContent
+        }
+        .frame(minHeight: 64)
+        .frame(maxWidth: .infinity)
+        .fixedSize(horizontal: false, vertical: true)
+        .scrollTargetBehavior(.viewAligned)
+        .scrollIndicators(.hidden)
+        .defaultScrollAnchor(.center, for: .alignment)
+        .mask(scrollMask)
+        .onAppear {
+            scrollToSelection(proxy, animated: false)
+        }
+        .onChange(of: selection) { _, _ in
+            scrollToSelection(proxy, animated: true)
+        }
+    }
+
+    private var pickerContent: some View {
+        Group(subviews: content) { subviews in
+            let leadingID = subviews.first?.id
+            let trailingID = subviews.last?.id
+
+            LazyHStack {
+                edgeSpacer(itemWidth: leadingItemWidth)
+                ForEach(subviews) { subview in
+                    let isLeading = subview.id == leadingID
+                    let isTrailing = subview.id == trailingID
+
+                    if let tag = subview.containerValues.tag(for: SelectionValue.self) {
+                        selectionButton(tag: tag, isSelected: selection == tag) {
+                            subview
                         }
-                        Spacer()
-                            .containerRelativeFrame(.horizontal) { (length, _) in
-                                max(0, (length - trailingItemWidth) / 2.0)
-                            }
-                    }
-                    .scrollTargetLayout()
-                    .onPreferenceChange(EdgeItemWidthPreferenceKey.self) { values in
-                        if let leading = values[.leading] {
-                            leadingItemWidth = leading
-                        }
-                        if let trailing = values[.trailing] {
-                            trailingItemWidth = trailing
-                        }
+                        .id(tag)
+                        .readEdgeItemWidth(isLeading: isLeading, isTrailing: isTrailing)
+                    } else {
+                        subview
+                            .readEdgeItemWidth(isLeading: isLeading, isTrailing: isTrailing)
                     }
                 }
+                edgeSpacer(itemWidth: trailingItemWidth)
             }
-            .frame(minHeight: 64)
-            .frame(maxWidth: .infinity)
-            .fixedSize(horizontal: false, vertical: true)
-            .scrollTargetBehavior(.viewAligned)
-            .scrollIndicators(.hidden)
-            .defaultScrollAnchor(.center, for: .alignment)
-            .mask {
-                LinearGradient(
-                    stops: [
-                        Gradient.Stop(color: .clear, location: 0),
-                        Gradient.Stop(color: .black, location: 0.2),
-                        Gradient.Stop(color: .black, location: 0.8),
-                        Gradient.Stop(color: .clear, location: 1),
-                    ],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
+            .scrollTargetLayout()
+            .onPreferenceChange(EdgeItemWidthPreferenceKey.self) { values in
+                updateEdgeItemWidths(values)
             }
-            .onAppear {
+        }
+    }
+
+    private func edgeSpacer(itemWidth: CGFloat) -> some View {
+        Spacer()
+            .containerRelativeFrame(.horizontal) { length, _ in
+                max(0, (length - itemWidth) / 2.0)
+            }
+    }
+
+    private func selectionButton<Label: View>(
+        tag: SelectionValue,
+        isSelected: Bool,
+        @ViewBuilder label: () -> Label
+    ) -> some View {
+        Button {
+            selection = tag
+        } label: {
+            label()
+                .labelStyle(.titleOnly)
+                .foregroundStyle(isSelected ? .black : .secondary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 4)
+                .background(isSelected ? .yellow : .clear)
+                .mask(Capsule())
+        }
+        .foregroundStyle(Color.primary)
+    }
+
+    private var scrollMask: some View {
+        LinearGradient(
+            stops: [
+                Gradient.Stop(color: .clear, location: 0),
+                Gradient.Stop(color: .black, location: 0.2),
+                Gradient.Stop(color: .black, location: 0.8),
+                Gradient.Stop(color: .clear, location: 1),
+            ],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+    }
+
+    private func scrollToSelection(_ proxy: ScrollViewProxy, animated: Bool) {
+        if animated {
+            withAnimation {
                 proxy.scrollTo(selection, anchor: .center)
             }
-            .onChange(of: selection) { _, newValue in
-                withAnimation {
-                    proxy.scrollTo(newValue, anchor: .center)
-                }
-            }
+        } else {
+            proxy.scrollTo(selection, anchor: .center)
+        }
+    }
+
+    private func updateEdgeItemWidths(_ values: [Edge: CGFloat]) {
+        if let leading = values[.leading] {
+            leadingItemWidth = leading
+        }
+        if let trailing = values[.trailing] {
+            trailingItemWidth = trailing
         }
     }
 }
