@@ -208,7 +208,7 @@ private extension ContentView {
 
             HStack(spacing: 16) {
                 VStack(spacing: 12) {
-                    GaugeButton(
+                    ToolItemGauge(
                         value: gaugeValue,
                         range: 0...1,
                         threshold: 0.5,
@@ -216,7 +216,7 @@ private extension ContentView {
                         isSelected: gaugeValue >= 0.5
                     )
 
-                    GaugeButton(
+                    ToolItemGauge(
                         value: gaugeValue,
                         range: 0...1,
                         threshold: 0.5,

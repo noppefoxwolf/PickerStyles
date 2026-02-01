@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct GaugeButton<Value: BinaryFloatingPoint>: View {
+public struct ToolItemGauge<Value: BinaryFloatingPoint>: View {
     public let value: Value
     public let range: ClosedRange<Value>
     public let threshold: Value?
@@ -32,7 +32,7 @@ public struct GaugeButton<Value: BinaryFloatingPoint>: View {
     }
 }
 
-private extension GaugeButton {
+private extension ToolItemGauge {
     var isBelowThreshold: Bool {
         guard let threshold else {
             return false
