@@ -3,9 +3,13 @@ import SwiftUI
 public struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: View {
     
     let content: Content
+    let autoSelectCenteredItem: Bool
     
     @Binding
     var selection: SelectionValue
+
+    @State
+    private var centeredSelection: SelectionValue?
     
     @State
     private var leadingItemWidth: CGFloat = 0
@@ -15,9 +19,11 @@ public struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: V
     
     public init(
         selection: Binding<SelectionValue>,
+        autoSelectCenteredItem: Bool = false,
         @ViewBuilder content: () -> Content
     ) {
         self._selection = selection
+        self.autoSelectCenteredItem = autoSelectCenteredItem
         self.content = content()
     }
     
@@ -29,9 +35,7 @@ public struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: V
 
     @ViewBuilder
     private func scrollView(proxy: ScrollViewProxy) -> some View {
-        ScrollView(.horizontal) {
-            pickerContent
-        }
+        scrollContainer
         .frame(minHeight: 64)
         .frame(maxWidth: .infinity)
         .fixedSize(horizontal: false, vertical: true)
@@ -40,10 +44,38 @@ public struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: V
         .defaultScrollAnchor(.center, for: .alignment)
         .mask(scrollMask)
         .onAppear {
+            if autoSelectCenteredItem {
+                centeredSelection = selection
+            }
             scrollToSelection(proxy, animated: false)
         }
         .onChange(of: selection) { _, _ in
+            if autoSelectCenteredItem, centeredSelection == selection {
+                return
+            }
             scrollToSelection(proxy, animated: true)
+        }
+        .onChange(of: centeredSelection) { _, newValue in
+            guard autoSelectCenteredItem, let newValue else {
+                return
+            }
+            if selection != newValue {
+                selection = newValue
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var scrollContainer: some View {
+        if autoSelectCenteredItem {
+            ScrollView(.horizontal) {
+                pickerContent
+            }
+            .scrollPosition(id: $centeredSelection, anchor: .center)
+        } else {
+            ScrollView(.horizontal) {
+                pickerContent
+            }
         }
     }
 
@@ -100,7 +132,7 @@ public struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: V
                 .foregroundStyle(isSelected ? .black : .secondary)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 4)
-                .background(isSelected ? .yellow : .clear)
+                .background(selectionBackground(isSelected: isSelected))
                 .mask(Capsule())
         }
         .foregroundStyle(Color.primary)
@@ -127,6 +159,13 @@ public struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: V
         } else {
             proxy.scrollTo(selection, anchor: .center)
         }
+    }
+
+    private func selectionBackground(isSelected: Bool) -> Color {
+        guard !autoSelectCenteredItem else {
+            return .clear
+        }
+        return isSelected ? .yellow : .clear
     }
 
     private func updateEdgeItemWidths(_ values: [Edge: CGFloat]) {

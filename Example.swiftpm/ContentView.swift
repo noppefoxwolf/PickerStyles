@@ -67,6 +67,9 @@ struct ContentView: View {
 
     @State
     private var gaugeValue: Double = 0.35
+
+    @State
+    private var centeredGaugeIndex: Int = 2
     
     private let items: [Item] = [
         Item(title: "Morning Light", subtitle: "Lagoon", symbolName: "sunrise.fill", category: .favorites),
@@ -78,6 +81,8 @@ struct ContentView: View {
         Item(title: "Scan Kit", subtitle: "Recent", symbolName: "doc.text.viewfinder", category: .recent),
         Item(title: "Portfolio", subtitle: "Archive", symbolName: "briefcase.fill", category: .archived)
     ]
+
+    private let gaugeOptions: [Double] = [0.1, 0.25, 0.4, 0.55, 0.7, 0.85]
     
     private var filteredItems: [Item] {
         guard selectedCategory != .all else {
@@ -108,6 +113,8 @@ struct ContentView: View {
                         .tag(category)
                 }
             }
+
+            gaugePickerSection
             
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
@@ -199,6 +206,41 @@ struct ContentView: View {
 }
 
 private extension ContentView {
+    var centeredGaugeValue: Double {
+        guard gaugeOptions.indices.contains(centeredGaugeIndex) else {
+            return 0
+        }
+        return gaugeOptions[centeredGaugeIndex]
+    }
+
+    @ViewBuilder
+    var gaugePickerSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Centered Gauge Picker")
+                .font(.headline)
+                .padding(.horizontal, 24)
+
+            HorizontalScrollPicker(selection: $centeredGaugeIndex, autoSelectCenteredItem: true) {
+                ForEach(Array(gaugeOptions.enumerated()), id: \.offset) { index, value in
+                    ToolItemGauge(
+                        value: value,
+                        range: 0...1,
+                        threshold: 0.5,
+                        showsValue: true,
+                        isSelected: centeredGaugeIndex == index
+                    )
+                    .tag(index)
+                }
+            }
+            .padding(.horizontal, 12)
+
+            Text("Centered: \(centeredGaugeValue, format: .number.precision(.fractionLength(2)))")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 24)
+        }
+    }
+
     @ViewBuilder
     var gaugeSection: some View {
         VStack(alignment: .leading, spacing: 16) {
