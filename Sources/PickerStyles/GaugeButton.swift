@@ -4,19 +4,27 @@ public struct GaugeButton<Value: BinaryFloatingPoint>: View {
     public let value: Value
     public let range: ClosedRange<Value>
     public let threshold: Value?
+    public let showsValue: Bool
     public let isSelected: Bool
     
-    public init(value: Value, range: ClosedRange<Value>, threshold: Value? = nil, isSelected: Bool) {
+    public init(
+        value: Value,
+        range: ClosedRange<Value>,
+        threshold: Value? = nil,
+        showsValue: Bool = false,
+        isSelected: Bool
+    ) {
         self.value = value
         self.range = range
         self.threshold = threshold
+        self.showsValue = showsValue
         self.isSelected = isSelected
     }
     
     public var body: some View {
         baseCircle
             .overlay {
-                icon
+                content
             }
             .overlay {
                 gaugeRing
@@ -58,14 +66,31 @@ private extension GaugeButton {
     var baseCircle: some View {
         Circle()
             .frame(width: 54, height: 54)
-            .foregroundStyle(isSelected ? Color.black : Color.white)
+            .foregroundStyle(isSelected ? Color(red: 0.321, green: 0.321, blue: 0.321) : Color(red: 0.958, green: 0.958, blue: 0.958))
     }
     
+    @ViewBuilder
+    var content: some View {
+        if showsValue {
+            valueLabel
+        } else {
+            icon
+        }
+    }
+
     @ViewBuilder
     var icon: some View {
         Image(systemName: "wand.and.sparkles.inverse")
             .resizable()
             .frame(width: 24, height: 24)
+            .foregroundStyle(isSelected ? Color.white : Color.black)
+    }
+
+    @ViewBuilder
+    var valueLabel: some View {
+        Text(Double(value), format: .number.precision(.fractionLength(2)))
+            .font(.caption.weight(.semibold))
+            .monospacedDigit()
             .foregroundStyle(isSelected ? Color.white : Color.black)
     }
     
