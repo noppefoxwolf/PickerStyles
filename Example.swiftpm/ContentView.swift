@@ -227,7 +227,11 @@ private extension ContentView {
                         range: 0...1,
                         threshold: 0.5,
                         showsValue: true,
-                        isSelected: centeredGaugeIndex == index
+                        isSelected: centeredGaugeIndex == index,
+                        label: {
+                            Image(systemName: "wand.and.sparkles.inverse")
+                                .resizable()
+                        }
                     )
                     .tag(index)
                 }
@@ -255,7 +259,11 @@ private extension ContentView {
                         range: 0...1,
                         threshold: 0.5,
                         showsValue: true,
-                        isSelected: gaugeValue >= 0.5
+                        isSelected: gaugeValue >= 0.5,
+                        label: {
+                            Image(systemName: "wand.and.sparkles.inverse")
+                                .resizable()
+                        }
                     )
 
                     ToolItemGauge(
@@ -263,7 +271,11 @@ private extension ContentView {
                         range: 0...1,
                         threshold: 0.5,
                         showsValue: false,
-                        isSelected: gaugeValue >= 0.5
+                        isSelected: gaugeValue >= 0.5,
+                        label: {
+                            Image(systemName: "wand.and.sparkles.inverse")
+                                .resizable()
+                        }
                     )
                 }
 

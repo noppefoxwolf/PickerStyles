@@ -1,24 +1,27 @@
 import SwiftUI
 
-public struct ToolItemGauge<Value: BinaryFloatingPoint>: View {
+public struct ToolItemGauge<Value: BinaryFloatingPoint, Label: View>: View {
     public let value: Value
     public let range: ClosedRange<Value>
     public let threshold: Value?
     public let showsValue: Bool
     public let isSelected: Bool
+    let label: Label
     
     public init(
         value: Value,
         range: ClosedRange<Value>,
         threshold: Value? = nil,
         showsValue: Bool = false,
-        isSelected: Bool
+        isSelected: Bool,
+        @ViewBuilder label: () -> Label
     ) {
         self.value = value
         self.range = range
         self.threshold = threshold
         self.showsValue = showsValue
         self.isSelected = isSelected
+        self.label = label()
     }
     
     public var body: some View {
@@ -80,8 +83,8 @@ private extension ToolItemGauge {
 
     @ViewBuilder
     var icon: some View {
-        Image(systemName: "wand.and.sparkles.inverse")
-            .resizable()
+        label
+            .labelStyle(.iconOnly)
             .frame(width: 24, height: 24)
             .foregroundStyle(isSelected ? Color.white : Color.black)
     }
