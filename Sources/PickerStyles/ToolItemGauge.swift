@@ -8,6 +8,9 @@ public struct ToolItemGauge<Value: BinaryFloatingPoint, Label: View>: View {
     public let isSelected: Bool
     let label: Label
     
+    @Environment(\.colorScheme)
+    var colorScheme
+    
     public init(
         value: Value,
         range: ClosedRange<Value>,
@@ -69,7 +72,22 @@ private extension ToolItemGauge {
     var baseCircle: some View {
         Circle()
             .frame(width: 54, height: 54)
-            .foregroundStyle(isSelected ? Color(red: 0.321, green: 0.321, blue: 0.321) : Color(red: 0.958, green: 0.958, blue: 0.958))
+            .foregroundStyle(baseCircleForegroundColor)
+    }
+    
+    var baseCircleForegroundColor: Color {
+        switch (isSelected, colorScheme) {
+        case (true, .dark):
+            Color(red: 0.321, green: 0.321, blue: 0.321)
+        case (false, .dark):
+            Color(red: 0.118, green: 0.118, blue: 0.118)
+        case (true, .light):
+            Color(red: 0.321, green: 0.321, blue: 0.321)
+        case (false, .light):
+            Color(red: 0.958, green: 0.958, blue: 0.958)
+        default:
+            Color.clear
+        }
     }
     
     @ViewBuilder
@@ -86,7 +104,7 @@ private extension ToolItemGauge {
         label
             .labelStyle(.iconOnly)
             .frame(width: 24, height: 24)
-            .foregroundStyle(isSelected ? Color.white : Color.black)
+            .foregroundStyle(foregroundColor)
     }
 
     @ViewBuilder
@@ -94,7 +112,22 @@ private extension ToolItemGauge {
         Text(Double(value), format: .number.precision(.fractionLength(2)))
             .font(.caption.weight(.semibold))
             .monospacedDigit()
-            .foregroundStyle(isSelected ? Color.white : Color.black)
+            .foregroundStyle(foregroundColor)
+    }
+    
+    var foregroundColor: Color {
+        switch (isSelected, colorScheme) {
+        case (true, .dark):
+            Color.white
+        case (false, .dark):
+            Color.white
+        case (true, .light):
+            Color.white
+        case (false, .light):
+            Color.black
+        default:
+            Color.clear
+        }
     }
     
     @ViewBuilder
