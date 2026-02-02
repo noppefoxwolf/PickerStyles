@@ -135,6 +135,7 @@ public struct HorizontalScrollPicker<SelectionValue: Hashable, Content: View>: V
                 .background(selectionBackground(isSelected: isSelected))
                 .mask(Capsule())
         }
+        .buttonStyle(.plain)
         .foregroundStyle(Color.primary)
     }
 

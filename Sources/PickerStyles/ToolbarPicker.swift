@@ -56,6 +56,7 @@ public struct ToolbarPicker<SelectionValue: Hashable, Content: View>: View {
                 .frame(minWidth: 44)
                 .selectedIndicator(isEnabled: isSelected)
         }
+        .buttonStyle(.plain)
         .foregroundStyle(Color.primary)
     }
 }
